@@ -1,0 +1,40 @@
+# Software Architecture Benchmark CLI Tool Specification
+
+## Overview
+CLI tool for benchmarking LLMs/VLMs on software architecture tasks, written in Go using hexagonal architecture.
+
+## Key Specifics
+Input types: PDF, text, diagram-images, or combinations
+Scale: 10 TestSuites with 100 test cases each
+Parallel execution of models within TestSuites
+Uses separate evaluation model for scoring results
+
+## Core Data Model
+Benchmark has 1..n TestSuites
+TestSuite has 1..n TestCases
+TestSuite has 1..n Metrics (that are used to test every TestCase in the TestSuite)
+TestCase has 1..1 DataSet (that consists of a set of inputs and expected outputs)
+A TestCase generates 1..1 EvaluationResult that is later on used to generate the complete report
+Provider has 1..n Model
+A TestSuite has 1..n Models are going to be tested in parallel
+A Benchmark has 1..1 Model configured for evaluating the results of the TestCases
+
+## Essential Features
+Resume capability: Store benchmark state for retry/partial reruns
+Local file storage for results and state
+YAML configuration for model credentials and parameters
+
+## CLI Commands
+bashCopybenchmark run <benchmark-name>
+benchmark run <benchmark-name> --test-suite <test-suite-name>
+benchmark list benchmarks
+benchmark list test-suites <benchmark-name>
+benchmark list providers
+
+## Implementation Constraints
+
+Core logic separated from external dependencies (hexagonal)
+Initial storage implementation uses local files
+All test cases within a suite use consistent metrics
+Parallel execution at test suite level
+Achive 100% test coverage with every task
