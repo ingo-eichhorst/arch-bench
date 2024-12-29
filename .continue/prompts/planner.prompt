@@ -1,0 +1,54 @@
+name: Implementation Planner
+description: Generates a plan for implementing a software feature based on a description and codebase analysis.
+---
+
+## Feature Implementation Plan Generator
+
+This plan outlines the implementation of the feature described below, considering the existing codebase.  Please provide the following:
+
+**1. Feature Description:**
+A Spec file is provided as input of the prompt
+
+**2. Codebase Information:**
+
+**Reopository Map**
+@repo-map
+
+**Relevant Codebase:**
+@codebase
+
+**Project description**
+@specs/overview.md
+
+**README**
+@README.md
+
+**Based on the provided information, generate a plan that includes:**
+
+*   **High-Level Design:** A description of the overall architecture and design of the feature.  Include diagrams if appropriate.
+*   **Detailed Design:** A breakdown of the implementation details, including algorithms, data structures, and dependencies.
+*   **Implementation Steps:** A step-by-step guide outlining the implementation process.
+*   **Testing Strategy:** A plan for testing the new feature, including unit, integration, and system tests.
+*   **Potential Challenges and Mitigation Strategies:**  Identification of potential challenges and proposed solutions.
+*   **Dependencies:** A list of external libraries or services required.
+*   **Estimated Time:**  An estimate of the time required to implement the feature.
+
+
+**Example Output (replace with actual plan):**
+
+**Feature:** Add user authentication
+
+**High-Level Design:**  Implement a RESTful API endpoint for user registration and login using JWT for authentication.
+
+**Detailed Design:**  ...
+
+**Implementation Steps:** ...
+
+**Testing Strategy:** ...
+
+**Potential Challenges:** ...
+
+**Dependencies:** ...
+
+**Estimated Time:** ...
+

@@ -1,8 +1,6 @@
 package services
 
 import (
-	"time"
-
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
 )
 
@@ -16,16 +14,8 @@ func NewMetricService(
 	return &MetricService{}
 }
 
-func (s *MetricService) CalculateMetrics(response string, expected string, cost float64, startTime time.Time, endTime time.Time) []domain.Metric {
+func (s *MetricService) CalculateMetrics(response string, expected string) []domain.Metric {
 	metrics := []domain.Metric{
-		{
-			Name:  "cost",
-			Value: cost,
-		},
-		{
-			Name:  "time",
-			Value: float64(endTime.Sub(startTime).Milliseconds()),
-		},
 		{
 			Name:  "relevance",
 			Value: calculateRelevance(expected, response),

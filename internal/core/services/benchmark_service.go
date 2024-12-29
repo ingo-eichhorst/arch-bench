@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
@@ -26,46 +27,38 @@ func NewBenchmarkService(benchConfig *domain.BenchmarkConfig) *BenchmarkService 
 func (s *BenchmarkService) RunBenchmark() error {
 	fmt.Printf("Running benchmark %s\n", s.cfg.Name)
 
-	// for each cfg.TeastSuiteConfigs start RunTestSuite sequential
 	for _, testSuiteConfig := range s.cfg.TestSuiteConfigs {
-		result, err := s.RunTestSuite(testSuiteConfig)
+		testSuite, err := s.RunTestSuite(testSuiteConfig)
 		if err != nil {
 			return fmt.Errorf("error running test suite %s: %v", testSuiteConfig.Name, err)
 		}
-		fmt.Printf("Result: %v\n", result)
+
+		// Generate and output the CLI report for this test suite
+		s.outputTestSuiteResults(testSuite)
 	}
 
 	return nil
 }
 
-func (s *BenchmarkService) RunTestSuite(cfg domain.TestSuiteConfig) (result *domain.TestSuite, error error) {
-
-	// testSuite is a slice of type TestSuite
-	testSuite := domain.TestSuite{
+func (s *BenchmarkService) RunTestSuite(cfg domain.TestSuiteConfig) (*domain.TestSuite, error) {
+	testSuite := &domain.TestSuite{
+		Name:      cfg.Name,
 		TestCases: make([]domain.TestCase, len(cfg.TestCaseConfigs)),
 	}
 
 	for i, testCaseConfig := range cfg.TestCaseConfigs {
-		// create a testcase from the testcase config
-		var testCase domain.TestCase
-
 		testCase, err := s.RunTestCase(&cfg, &testCaseConfig)
 		if err != nil {
 			return nil, fmt.Errorf("error running test case %s: %v", testCaseConfig.Name, err)
 		}
 
 		testSuite.TestCases[i] = testCase
-
 	}
 
-	// TODO: Save the results to the repository
-	// TODO: Generate and output the CLI report
-
-	return &testSuite, nil
+	return testSuite, nil
 }
 
 func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, testCaseConfig *domain.TestCaseConfig) (domain.TestCase, error) {
-
 	llmService, err := NewLLMService(
 		s.cfg.EvalProvider,
 		s.cfg.EvalApiKey,
@@ -80,15 +73,11 @@ func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, 
 	if err != nil {
 		return domain.TestCase{}, fmt.Errorf("error creating LLM response: %v", err)
 	}
-	endTime := time.Now()
+	duration := time.Since(startTime)
 
-	// for every test case check the metrics for the response
 	metrics := s.metricService.CalculateMetrics(
 		llmResponse.Response,
 		testCaseConfig.Expected,
-		llmResponse.Cost,
-		startTime,
-		endTime,
 	)
 
 	return domain.TestCase{
@@ -96,8 +85,29 @@ func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, 
 		Input:    testCaseConfig.Input,
 		Expected: testCaseConfig.Expected,
 		Result: &domain.TestResult{
-			Output:  llmResponse.Response,
-			Metrics: metrics,
+			Output:   llmResponse.Response,
+			Metrics:  metrics,
+			Duration: duration,
+			Cost:     llmResponse.Cost,
 		},
 	}, nil
+}
+
+func (s *BenchmarkService) outputTestSuiteResults(testSuite *domain.TestSuite) {
+	results := testSuite.AggregateResults()
+
+	fmt.Printf("\nResults for Test Suite: %s\n", testSuite.Name)
+	fmt.Printf("%-20s %-20s %-15s %-10s %-10s\n", "TestSuite", "TestCase", "Duration", "Cost", "Rating")
+	fmt.Println(strings.Repeat("-", 80))
+
+	for _, result := range results {
+		fmt.Printf("%-20s %-20s %-15s $%-9.2f %-10.2f\n",
+			result.TestSuite,
+			result.TestCase,
+			result.Duration.Round(time.Millisecond),
+			result.Cost,
+			result.AverageRating,
+		)
+	}
+	fmt.Println()
 }
