@@ -32,15 +32,3 @@ func (s *LLMService) GenerateResponse(SystemPrompt string, query string) (domain
 
 	return llmResponse, nil
 }
-
-func calculateCost(tokens int) float64 {
-	// Define the cost per 1,000 tokens in USD
-	const promptCostPerThousand = 0.0025
-	const completionCostPerThousand = 0.01
-
-	// Calculate the cost (assuming all tokens are completion tokens for simplicity)
-	// In a real-world scenario, you'd separate prompt and completion tokens
-	cost := (float64(tokens) / 1000) * completionCostPerThousand
-
-	return cost
-}
