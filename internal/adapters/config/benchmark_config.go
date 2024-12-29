@@ -20,7 +20,7 @@ type BenchmarkConfigLoader struct {
 }
 
 func NewBenchmarkConfigLoader(name string) (*BenchmarkConfigLoader, error) {
-	basePath := filepath.Join("../../", "benchmarks", name)
+	basePath := filepath.Join(".", "benchmarks", name)
 	if _, err := os.Stat(basePath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("benchmark directory does not exist: %s", basePath)
 	}
