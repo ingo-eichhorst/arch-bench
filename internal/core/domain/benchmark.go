@@ -32,3 +32,7 @@ type BenchmarkConfig struct {
 	EvalProvider     string
 	TestSuiteConfigs []TestSuiteConfig
 }
+
+type EvaluationResult struct {
+	Score float64
+}

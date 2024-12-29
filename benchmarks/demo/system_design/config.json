@@ -3,37 +3,12 @@
   "description": "Evaluates the model's ability to create high-level system designs",
   "metrics": [
     {
-      "name": "duration",
-      "measurement": [
-        {
-          "name": "duration",
-          "unit": "seconds",
-          "weight": 1
-        }
-      ]
+      "name": "relevance",
+      "weight": 0.5
     },
     {
-      "name": "cost",
-      "measurement": [
-        {
-          "name": "cost",
-          "unit": "dollar",
-          "weight": 1
-        }
-      ]
-    },
-    {
-      "name": "quality",
-      "measurement": [
-        {
-          "name": "relevance",
-          "weight": 0.5
-        },
-        {
-          "name": "bleu",
-          "weight": 0.5
-        }
-      ]
+      "name": "geval",
+      "weight": 0.5
     }
   ]
 }
