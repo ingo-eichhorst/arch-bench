@@ -16,11 +16,11 @@ func NewMetricService(
 	return &MetricService{}
 }
 
-func (s *MetricService) CalculateMetrics(response string, expected string, startTime time.Time, endTime time.Time) []domain.Metric {
+func (s *MetricService) CalculateMetrics(response string, expected string, cost float64, startTime time.Time, endTime time.Time) []domain.Metric {
 	metrics := []domain.Metric{
 		{
 			Name:  "cost",
-			Value: calculateCost(response),
+			Value: cost,
 		},
 		{
 			Name:  "time",
@@ -33,11 +33,6 @@ func (s *MetricService) CalculateMetrics(response string, expected string, start
 	}
 
 	return metrics
-}
-
-func calculateCost(output string) float64 {
-	// TODO: Implement actual cost calculation based on the model and output length
-	return float64(len(output)) * 0.001 // Placeholder implementation
 }
 
 func calculateRelevance(expected, actual string) float64 {

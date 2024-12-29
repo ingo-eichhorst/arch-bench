@@ -76,7 +76,7 @@ func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, 
 	}
 
 	startTime := time.Now()
-	response, err := llmService.GenerateResponse(testCaseConfig.Input, testCaseConfig.Input)
+	llmResponse, err := llmService.GenerateResponse(testCaseConfig.Input, testCaseConfig.Input)
 	if err != nil {
 		return domain.TestCase{}, fmt.Errorf("error creating LLM response: %v", err)
 	}
@@ -84,8 +84,9 @@ func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, 
 
 	// for every test case check the metrics for the response
 	metrics := s.metricService.CalculateMetrics(
-		response,
+		llmResponse.Response,
 		testCaseConfig.Expected,
+		llmResponse.Cost,
 		startTime,
 		endTime,
 	)
@@ -95,7 +96,7 @@ func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, 
 		Input:    testCaseConfig.Input,
 		Expected: testCaseConfig.Expected,
 		Result: &domain.TestResult{
-			Output:  response,
+			Output:  llmResponse.Response,
 			Metrics: metrics,
 		},
 	}, nil
