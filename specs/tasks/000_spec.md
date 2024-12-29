@@ -8,7 +8,4 @@ Create the file structure and a benchmark that can be run, but only output a dem
   - Run the benchmark to see if it works
   - Output a demo result
   - Run demo Benchmark with: `benchmark run demo`
-
-## Context
-  - Follow the general guidance in specs/overview.md
   
