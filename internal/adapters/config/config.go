@@ -15,7 +15,7 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	pwd, _ := os.Getwd()
-	err := godotenv.Load(filepath.Join(pwd, "../../.env"))
+	err := godotenv.Load(filepath.Join(pwd, ".env"))
 	if err != nil {
 		return nil, err
 	}
