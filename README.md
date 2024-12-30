@@ -26,6 +26,9 @@ This repository contains a command-line tool for benchmarking Large Language Mod
 EVAL_API_KEY=xxxxx
 EVAL_MODEL=gpt-4o-mini
 EVAL_PROVIDER=openai
+
+# Depending on the model your test suites are testing you need to set the API key for that provider.
+OPENAI_API_KEY=xxxxx
 ```
 
 3. **Running Benchmarks:**
