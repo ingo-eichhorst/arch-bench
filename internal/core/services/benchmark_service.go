@@ -1,5 +1,3 @@
-// File: internal/core/services/benchmark_service.go
-
 package services
 
 import (
@@ -21,28 +19,34 @@ func NewBenchmarkService(benchConfig *domain.BenchmarkConfig) *BenchmarkService 
 		metricService: NewMetricService(
 			benchConfig.EvalProvider,
 			benchConfig.EvalModel,
-			benchConfig.EvalApiKey,
+			benchConfig,
 		),
 	}
 }
 
-func (s *BenchmarkService) RunBenchmark() error {
-	fmt.Printf("Running benchmark %s\n", s.cfg.Name)
+func (s *BenchmarkService) RunBenchmark(testSuiteName string) error {
+	fmt.Printf("Running Benchmark: %s\n", s.cfg.Name)
+	fmt.Printf("- Eval Provider: %s\n", s.cfg.EvalProvider)
+	fmt.Printf("- Eval Model: %s\n", s.cfg.EvalModel)
+	fmt.Printf("----------------------\n")
 
 	for _, testSuiteConfig := range s.cfg.TestSuiteConfigs {
+		if testSuiteName != "" && testSuiteConfig.Name != testSuiteName {
+			continue // Skip if testSuiteName is specified and doesn't match
+		}
 		testSuite, err := s.RunTestSuite(testSuiteConfig)
 		if err != nil {
 			return fmt.Errorf("error running test suite %s: %v", testSuiteConfig.Name, err)
 		}
-
-		// Generate and output the CLI report for this test suite
 		s.outputTestSuiteResults(testSuite)
 	}
-
 	return nil
 }
 
 func (s *BenchmarkService) RunTestSuite(cfg domain.TestSuiteConfig) (*domain.TestSuite, error) {
+	fmt.Printf("Running Test Suite: %s\n", cfg.Name)
+	// fmt.Printf("- Test Provider: %s\n", cfg)
+
 	testSuite := &domain.TestSuite{
 		Name:      cfg.Name,
 		TestCases: make([]domain.TestCase, len(cfg.TestCaseConfigs)),
@@ -56,15 +60,18 @@ func (s *BenchmarkService) RunTestSuite(cfg domain.TestSuiteConfig) (*domain.Tes
 
 		testSuite.TestCases[i] = testCase
 	}
+	fmt.Printf("----------------------\n")
 
 	return testSuite, nil
 }
 
 func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, testCaseConfig *domain.TestCaseConfig) (domain.TestCase, error) {
+	fmt.Printf("Running Test Case: %s\n", testCaseConfig.Name)
+
 	llmService, err := NewLLMService(
-		s.cfg.EvalProvider,
-		s.cfg.EvalApiKey,
-		s.cfg.EvalModel,
+		testSuiteConfig.Provider,
+		testSuiteConfig.Model,
+		s.cfg,
 	)
 	if err != nil {
 		return domain.TestCase{}, fmt.Errorf("error creating LLM service: %v", err)

@@ -1,0 +1,1 @@
+Design a high-level system architecture for an e-commerce platform that can handle millions of users, process payments securely, and integrate with various third-party services for inventory management and shipping. The platform should be scalable, fault-tolerant, and able to handle peak traffic during sales events.

@@ -1,0 +1,16 @@
+{
+  "name": "System Design Test Suite",
+  "description": "Evaluates the model's ability to create high-level system designs",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "metrics": [
+    {
+      "name": "relevance",
+      "weight": 0.5
+    },
+    {
+      "name": "geval",
+      "weight": 0.5
+    }
+  ]
+}

@@ -10,6 +10,15 @@ type TestSuite struct {
 	TestCases []TestCase
 }
 
+type TestSuiteConfig struct {
+	Name            string
+	Description     string
+	Provider        string
+	Model           string
+	MetricConfigs   []MetricConfig
+	TestCaseConfigs []TestCaseConfig
+}
+
 type Metric struct {
 	Name  string
 	Value float64

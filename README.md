@@ -42,9 +42,6 @@ go run main.go run demo
 cp benchmarks/demo benchmarks/my-own
 go run main.go run my-own
 
-
-#TODO: Everything below needs to be implemented still
-
 # Run a specific test suite within a benchmark
 go run main.go run <benchmark-name> --test-suite <test-suite-name>
 

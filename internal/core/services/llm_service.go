@@ -12,10 +12,14 @@ type LLMService struct {
 	provider ports.LLMProvider
 }
 
-func NewLLMService(providerName string, APIKey string, ModelName string) (*LLMService, error) {
+func NewLLMService(providerName string, ModelName string, cfg *domain.BenchmarkConfig) (*LLMService, error) {
 	var provider ports.LLMProvider
 	switch providerName {
 	case "openai":
+		APIKey := cfg.OpenAIAPIKey
+		if APIKey == "" {
+			return nil, fmt.Errorf("OpenAI API key is required")
+		}
 		provider = llm.NewOpenAIProvider(APIKey, ModelName)
 	default:
 		return nil, fmt.Errorf("unsupported LLM provider: %s", providerName)
@@ -31,4 +35,9 @@ func (s *LLMService) GenerateResponse(SystemPrompt string, query string) (domain
 	}
 
 	return llmResponse, nil
+}
+
+// Add the new GetModelPriceMap method
+func (s *LLMService) GetModels() []string {
+	return s.provider.GetModels()
 }

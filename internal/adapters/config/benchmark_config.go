@@ -34,6 +34,7 @@ func (l *BenchmarkConfigLoader) LoadBenchmarkConfig(
 	evalAPIKey string,
 	evalModel string,
 	evalProvider string,
+	OpenAIAPIKey string,
 ) (*domain.BenchmarkConfig, error) {
 	configPath := filepath.Join(l.BasePath, "config.json")
 	data, err := ioutil.ReadFile(configPath)
@@ -51,6 +52,7 @@ func (l *BenchmarkConfigLoader) LoadBenchmarkConfig(
 	benchmarkConfig.EvalApiKey = evalAPIKey
 	benchmarkConfig.EvalModel = evalModel
 	benchmarkConfig.EvalProvider = evalProvider
+	benchmarkConfig.OpenAIAPIKey = OpenAIAPIKey
 
 	// Load test suites
 	testSuites, err := l.loadTestSuites()

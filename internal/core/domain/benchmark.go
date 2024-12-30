@@ -16,13 +16,6 @@ type MetricConfig struct {
 	Mesurements []MeasurementConfig
 }
 
-type TestSuiteConfig struct {
-	Name            string
-	Description     string
-	MetricConfigs   []MetricConfig
-	TestCaseConfigs []TestCaseConfig
-}
-
 type BenchmarkConfig struct {
 	Name             string
 	Description      string
@@ -30,6 +23,7 @@ type BenchmarkConfig struct {
 	EvalApiKey       string
 	EvalModel        string
 	EvalProvider     string
+	OpenAIAPIKey     string
 	TestSuiteConfigs []TestSuiteConfig
 }
 

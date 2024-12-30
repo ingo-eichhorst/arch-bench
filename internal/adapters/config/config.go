@@ -11,6 +11,8 @@ type Config struct {
 	EvalAPIKey   string
 	EvalModel    string
 	EvalProvider string
+	// connection keys for non eval models
+	OpenAIAPIKey string
 }
 
 func LoadConfig() (*Config, error) {
@@ -24,5 +26,6 @@ func LoadConfig() (*Config, error) {
 		EvalAPIKey:   os.Getenv("EVAL_API_KEY"),
 		EvalModel:    os.Getenv("EVAL_MODEL"),
 		EvalProvider: os.Getenv("EVAL_PROVIDER"),
+		OpenAIAPIKey: os.Getenv("OPENAI_API_KEY"),
 	}, nil
 }

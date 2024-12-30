@@ -15,25 +15,15 @@ type PriceEntry struct {
 }
 
 var ModelPriceMap = map[string]PriceEntry{
-	"gpt-4":                  {InputCostPerMillion: 30.0, OutputCostPerMillion: 60.0},
-	"gpt-4-32k":              {InputCostPerMillion: 60.0, OutputCostPerMillion: 120.0},
-	"gpt-4-turbo":            {InputCostPerMillion: 10.0, OutputCostPerMillion: 30.0},
-	"gpt-4-turbo-2024-04-09": {InputCostPerMillion: 10.0, OutputCostPerMillion: 30.0},
-	"gpt-4-0125-preview":     {InputCostPerMillion: 10.0, OutputCostPerMillion: 30.0},
-	"gpt-4-1106-preview":     {InputCostPerMillion: 10.0, OutputCostPerMillion: 30.0},
-	"gpt-4-vision-preview":   {InputCostPerMillion: 10.0, OutputCostPerMillion: 30.0},
-	"gpt-4o":                 {InputCostPerMillion: 2.5, OutputCostPerMillion: 10.0},
-	"gpt-4o-2024-11-20":      {InputCostPerMillion: 2.5, OutputCostPerMillion: 10.0},
-	"gpt-4o-2024-08-06":      {InputCostPerMillion: 2.5, OutputCostPerMillion: 10.0},
-	"gpt-4o-2024-05-13":      {InputCostPerMillion: 5.0, OutputCostPerMillion: 15.0},
-	"gpt-4o-mini":            {InputCostPerMillion: 0.15, OutputCostPerMillion: 0.6},
-	"gpt-4o-mini-2024-07-18": {InputCostPerMillion: 0.15, OutputCostPerMillion: 0.6},
-	"o1":                     {InputCostPerMillion: 15.0, OutputCostPerMillion: 60.0},
-	"o1-2024-12-17":          {InputCostPerMillion: 15.0, OutputCostPerMillion: 60.0},
-	"o1-preview":             {InputCostPerMillion: 15.0, OutputCostPerMillion: 60.0},
-	"o1-preview-2024-09-12":  {InputCostPerMillion: 15.0, OutputCostPerMillion: 60.0},
-	"o1-mini":                {InputCostPerMillion: 3.0, OutputCostPerMillion: 12.0},
-	"o1-mini-2024-09-12":     {InputCostPerMillion: 3.0, OutputCostPerMillion: 12.0},
+	"gpt-4":                {InputCostPerMillion: 30.0, OutputCostPerMillion: 60.0},
+	"gpt-4-32k":            {InputCostPerMillion: 60.0, OutputCostPerMillion: 120.0},
+	"gpt-4-turbo":          {InputCostPerMillion: 10.0, OutputCostPerMillion: 30.0},
+	"gpt-4-vision-preview": {InputCostPerMillion: 10.0, OutputCostPerMillion: 30.0},
+	"gpt-4o":               {InputCostPerMillion: 2.5, OutputCostPerMillion: 10.0},
+	"gpt-4o-mini":          {InputCostPerMillion: 0.15, OutputCostPerMillion: 0.6},
+	"o1":                   {InputCostPerMillion: 15.0, OutputCostPerMillion: 60.0},
+	"o1-preview":           {InputCostPerMillion: 15.0, OutputCostPerMillion: 60.0},
+	"o1-mini":              {InputCostPerMillion: 3.0, OutputCostPerMillion: 12.0},
 }
 
 type OpenAIProvider struct {
@@ -97,4 +87,12 @@ func (p *OpenAIProvider) GenerateResponse(systemPrompt string, query string) (do
 		Response: resp.Choices[0].Message.Content,
 		Cost:     cost,
 	}, nil
+}
+
+func (p *OpenAIProvider) GetModels() []string {
+	models := make([]string, 0, len(ModelPriceMap))
+	for model := range ModelPriceMap {
+		models = append(models, model)
+	}
+	return models
 }

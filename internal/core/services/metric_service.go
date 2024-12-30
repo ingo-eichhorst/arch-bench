@@ -14,9 +14,9 @@ type MetricService struct {
 func NewMetricService(
 	EvalProvider string,
 	EvalModel string,
-	EvalApiKey string,
+	cfg *domain.BenchmarkConfig,
 ) *MetricService {
-	llmService, _ := NewLLMService(EvalProvider, EvalApiKey, EvalModel)
+	llmService, _ := NewLLMService(EvalProvider, EvalModel, cfg)
 	return &MetricService{
 		llmService: llmService,
 	}
