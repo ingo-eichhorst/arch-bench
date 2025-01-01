@@ -2,11 +2,13 @@ package llm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
 	"github.com/ingo-eichhorst/arch-bench/internal/core/ports"
 	"github.com/sashabaranov/go-openai"
+	"github.com/xeipuuv/gojsonschema" // Add this import for JSON Schema validation
 )
 
 type PriceEntry struct {
@@ -96,3 +98,62 @@ func (p *OpenAIProvider) GetModels() []string {
 	}
 	return models
 }
+
+// GenerateStructuredResponse generates a response with structured output based on a JSON schema.
+func (p *OpenAIProvider) GenerateStructuredResponse(systemPrompt, query string, schema string) (map[string]interface{}, error) {
+	// Prepare the prompt to include instructions for structured output.
+	prompt := fmt.Sprintf(`Respond in a structured JSON format adhering to the following schema:
+%s
+Query: %s`, schema, query)
+
+	resp, err := p.client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: p.model,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleSystem,
+					Content: systemPrompt,
+				},
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: prompt,
+				},
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error calling OpenAI API: %v", err)
+	}
+
+	// Parse the JSON response.  Error handling is crucial here.
+	var data map[string]interface{}
+	err = json.Unmarshal([]byte(resp.Choices[0].Message.Content), &data)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling JSON response: %v", err)
+	}
+
+	// Validate against the JSON Schema (requires schema definition)
+	schemaLoader := gojsonschema.NewStringLoader(schema)
+	dataLoader := gojsonschema.NewGoLoader(data)
+	result, err := gojsonschema.Validate(schemaLoader, dataLoader)
+	if err != nil {
+		return nil, fmt.Errorf("error validating JSON against schema: %v", err)
+	}
+
+	if !result.Valid() {
+		return nil, fmt.Errorf("JSON response is invalid according to schema: %v", result.Errors())
+	}
+
+	cost, err := p.costCalculator.CalculateCost(resp.Usage.PromptTokens, resp.Usage.CompletionTokens, p.model)
+	if err != nil {
+		return nil, fmt.Errorf("error calculating cost: %v", err)
+	}
+
+	//Attaching cost to the response
+	data["cost"] = cost
+
+	return data, nil
+}
+
+// ... (Rest of the existing code) ...

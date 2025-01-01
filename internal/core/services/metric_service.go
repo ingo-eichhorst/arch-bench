@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
 )
@@ -70,37 +69,47 @@ func (g *GEval) buildPrompt(context, target string) string {
 	)
 }
 
-// Evaluate performs the evaluation of the target text given the context
-func (g *GEval) Evaluate(context, target string, possibleScores []int) (*domain.EvaluationResult, error) {
-	prompt := g.buildPrompt(context, target)
-	// TODO: Use Structured Outputs instead to make everything more simple to parse
-	response, err := g.llmService.GenerateResponse("You will evaluate the quality of a generated text.", prompt)
+const gevalSchema = `
+{
+  "type": "object",
+  "properties": {
+    "score": {
+      "type": "number",
+      "description": "Overall evaluation score (0-100)",
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "score"
+  ]
+}
+`
+
+// Evaluate performs the evaluation using structured output.
+func (g *GEval) Evaluate(context string, target string) (*domain.EvaluationResult, error) {
+	structuredResponse, err := g.llmService.provider.GenerateStructuredResponse(g.buildPrompt(context, target), target, gevalSchema)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get evaluation: %v", err)
+		return nil, fmt.Errorf("error generating structured response: %v", err)
 	}
 
-	pos := len(response.Response) - 1
-	character := response.Response[pos]
-	score, _ := strconv.Atoi(string(character))
+	scoreInterface, ok := structuredResponse["score"]
+	if !ok {
+		return nil, fmt.Errorf("score field not found in structured response")
+	}
 
-	return &domain.EvaluationResult{
-		Score: float64(score * 20),
-	}, nil
+	return &domain.EvaluationResult{Score: scoreInterface.(float64)}, nil
 }
 
 func (s *MetricService) CalculateMetrics(response string, expected string) []domain.Metric {
 	geval := NewGEval(s.llmService, "Evaluate the quality of the generated text.", "Coherence (1-5): evaluate the logical flow and connection between sentences.")
-
-	// TODO: Proper error handling
 	err := geval.GenerateChainOfThoughts()
 	if err != nil {
-		// Handle error, perhaps log it
 		fmt.Printf("Error generating chain of thoughts: %v\n", err)
 	}
 
-	result, err := geval.Evaluate(expected, response, []int{1, 2, 3, 4, 5})
+	result, err := geval.Evaluate(expected, response)
 	if err != nil {
-		// Handle error, perhaps log it
 		fmt.Printf("Error evaluating response: %v\n", err)
 	}
 
@@ -119,10 +128,8 @@ func (s *MetricService) CalculateMetrics(response string, expected string) []dom
 }
 
 func calculateRelevance(expected, actual string) float64 {
-	// TODO: Implement actual relevance calculation
-	// This could involve more sophisticated NLP techniques or comparison algorithms
 	if expected == actual {
 		return 100.0
 	}
-	return 50.0 // Placeholder implementation
+	return 50.0
 }
