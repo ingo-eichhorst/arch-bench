@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -136,23 +137,44 @@ func (l *BenchmarkConfigLoader) loadTestCases(suitePath string) ([]domain.TestCa
 func (l *BenchmarkConfigLoader) loadTestCase(suitePath, caseName string) (domain.TestCaseConfig, error) {
 	casePath := filepath.Join(suitePath, caseName)
 
-	inputPath := filepath.Join(casePath, "input.txt")
-	input, err := ioutil.ReadFile(inputPath)
+	// load and parse the config.json in the test case folder
+	configPath := filepath.Join(casePath, "config.json")
+	configFile, err := os.Open(configPath)
 	if err != nil {
-		return domain.TestCaseConfig{}, fmt.Errorf("failed to read input file: %w", err)
+		return domain.TestCaseConfig{}, fmt.Errorf("failed to open config.json: %w", err)
+	}
+	defer configFile.Close()
+
+	configData, err := io.ReadAll(configFile)
+	if err != nil {
+		return domain.TestCaseConfig{}, fmt.Errorf("failed to read config.json: %w", err)
 	}
 
-	expectedOutputPath := filepath.Join(casePath, "expected_output.txt")
-	expectedOutput, err := ioutil.ReadFile(expectedOutputPath)
-	if err != nil {
-		return domain.TestCaseConfig{}, fmt.Errorf("failed to read expected output file: %w", err)
+	var config = domain.TestCaseConfig{}
+	if err := json.Unmarshal(configData, &config); err != nil {
+		return domain.TestCaseConfig{}, fmt.Errorf("failed to parse config.json: %w", err)
 	}
 
-	testCase := domain.TestCaseConfig{
+	// Construct full paths based on config values, not hardcoded filenames
+	inputPath := filepath.Join(casePath, config.Input)
+	inputBytes, err := ioutil.ReadFile(inputPath)
+	if err != nil {
+		return domain.TestCaseConfig{}, fmt.Errorf("failed to read input file '%s': %w", inputPath, err)
+	}
+
+	expectedOutputPath := filepath.Join(casePath, config.Expected)
+	expectedOutputBytes, err := ioutil.ReadFile(expectedOutputPath)
+	if err != nil {
+		return domain.TestCaseConfig{}, fmt.Errorf("failed to read expected output file '%s': %w", expectedOutputPath, err)
+	}
+
+	config = domain.TestCaseConfig{
 		Name:     caseName,
-		Input:    string(input),
-		Expected: string(expectedOutput),
+		Path:     casePath,
+		Input:    string(inputBytes),
+		Expected: string(expectedOutputBytes),
+		Images:   config.Images,
 	}
 
-	return testCase, nil
+	return config, nil
 }

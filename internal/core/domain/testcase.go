@@ -4,8 +4,10 @@ import "time"
 
 type TestCaseConfig struct {
 	Name     string
+	Path     string
 	Input    string
 	Expected string
+	Images   []string
 }
 
 type TestCase struct {

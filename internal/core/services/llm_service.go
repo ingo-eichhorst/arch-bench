@@ -29,7 +29,9 @@ func NewLLMService(providerName string, ModelName string, cfg *domain.BenchmarkC
 }
 
 func (s *LLMService) GenerateResponse(SystemPrompt string, query string) (domain.LLMResponse, error) {
-	llmResponse, err := s.provider.GenerateResponse(SystemPrompt, query)
+	// TODO: FAKE images for now
+	images := make([]string, 0)
+	llmResponse, err := s.provider.GenerateResponse(SystemPrompt, query, images)
 	if err != nil {
 		return domain.LLMResponse{}, err
 	}

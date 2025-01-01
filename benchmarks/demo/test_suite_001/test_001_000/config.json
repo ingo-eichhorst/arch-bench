@@ -1,0 +1,9 @@
+{
+  "name": "test_case_001",
+  "input": "input.txt",
+  "expected": "expected.txt",
+  "images": [
+    "diagram_0.jpg",
+    "diagram_1.png"
+  ]
+}

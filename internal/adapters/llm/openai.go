@@ -8,7 +8,7 @@ import (
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
 	"github.com/ingo-eichhorst/arch-bench/internal/core/ports"
 	"github.com/sashabaranov/go-openai"
-	"github.com/xeipuuv/gojsonschema" // Add this import for JSON Schema validation
+	"github.com/xeipuuv/gojsonschema"
 )
 
 type PriceEntry struct {
@@ -62,7 +62,7 @@ func NewOpenAIProvider(apiKey, model string) ports.LLMProvider {
 	}
 }
 
-func (p *OpenAIProvider) GenerateResponse(systemPrompt string, query string) (domain.LLMResponse, error) {
+func (p *OpenAIProvider) GenerateResponse(systemPrompt string, query string, images []string) (domain.LLMResponse, error) {
 	resp, err := p.client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
@@ -150,10 +150,6 @@ Query: %s`, schema, query)
 		return nil, fmt.Errorf("error calculating cost: %v", err)
 	}
 
-	//Attaching cost to the response
 	data["cost"] = cost
-
 	return data, nil
 }
-
-// ... (Rest of the existing code) ...
