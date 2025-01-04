@@ -1,0 +1,17 @@
+# ADR-0005-Parallel-Execution.adoc - Architecture Decision Record
+
+== ADR-0005: Parallel Execution
+
+=== Context
+The Architecture Benchmark Tool needs to efficiently utilize resources and reduce execution time for benchmarks.
+
+=== Decision
+Support parallel execution of benchmarks.
+
+=== Status
+Accepted
+
+=== Consequences
+- Optimizes resource usage.
+- Reduces overall execution time.
+- Requires careful management of concurrency and synchronization.

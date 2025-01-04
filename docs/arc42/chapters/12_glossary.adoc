@@ -1,0 +1,17 @@
+# 12_glossary.adoc - Glossary
+
+== Glossary
+
+[cols="e,2e" options="header"]
+|===
+|Term |Definition
+
+|LLM (Large Language Model)
+|A machine learning model trained to understand and generate natural language.
+
+|Benchmark
+|A standardized test to evaluate the performance and quality of LLMs in specific tasks.
+
+|Hexagonal Architecture
+|An architectural pattern that separates business logic from technical details and promotes extensibility.
+|===

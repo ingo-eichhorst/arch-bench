@@ -1,0 +1,13 @@
+# 11_technical_risks.adoc - Risks and Technical Debts
+
+== Risks and Technical Debts
+
+=== Identified Risks
+
+1. **Lernkurve für Go**:
+   - **Risiko**: Die Entscheidung, Go zu lernen, könnte zu anfänglichen Verzögerungen führen.
+   - **Maßnahme**: Schulungen und Ressourcen bereitstellen, um die Lernkurve zu verkürzen.
+
+2. **Abhängigkeit von LLM-APIs**:
+   - **Risiko**: Änderungen oder Ausfälle der LLM-APIs könnten die Funktionalität beeinträchtigen. Die OpenAI API hat sich als Standard etabliert, und es wird erwartet, dass die meisten Anbieter diese API in Zukunft anbieten werden.
+   - **Maßnahme**: Implementierung von Fallback-Mechanismen und regelmäßige API-Überprüfungen.

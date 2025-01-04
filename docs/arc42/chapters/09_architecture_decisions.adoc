@@ -1,0 +1,9 @@
+# 09_architecture_decisions.adoc - Architecture Decisions
+
+== Architecture Decisions
+
+include::../ADRs/ADR-0001-Hexagonal-Architecture.adoc[]
+include::../ADRs/ADR-0002-Programming-Language-Go.adoc[]
+include::../ADRs/ADR-0003-File-Based-Storage.adoc[]
+include::../ADRs/ADR-0004-Plugin-Architecture.adoc[]
+include::../ADRs/ADR-0005-Parallel-Execution.adoc[]

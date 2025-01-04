@@ -1,0 +1,37 @@
+# 05_building_block_view.adoc - Building Block View
+
+== Building Block View
+
+=== Whitebox Overall System
+
+**Motivation**: The static decomposition of the system into building blocks helps to make the structure of the source code understandable and enables communication with stakeholders at an abstract level.
+
+**Contained Building Blocks**:
+
+- **CLI Adapter**: 
+  - **Responsibility**: Handles user interaction via the command line.
+  - **File Path**: `internal/adapters/cli/commands.go`
+
+- **Config Adapter**: 
+  - **Responsibility**: Processes the benchmark configuration.
+  - **File Path**: `internal/adapters/config/benchmark_config.go`, `internal/adapters/config/config.go`
+
+- **LLM Adapter**: 
+  - **Responsibility**: Communicates with LLM providers like OpenAI.
+  - **File Path**: `internal/adapters/llm/openai.go`
+
+- **Core Domain**: 
+  - **Responsibility**: Contains the business logic of the system.
+  - **File Path**: `internal/core/domain/benchmark.go`, `internal/core/domain/llm_response.go`, `internal/core/domain/testcase.go`, `internal/core/domain/testsuite.go`
+
+- **Ports**: 
+  - **Responsibility**: Defines interfaces for LLM providers.
+  - **File Path**: `internal/core/ports/llm_providers.go`
+
+- **Services**: 
+  - **Responsibility**: Implements services for benchmarks, LLMs, and metrics.
+  - **File Path**: `internal/core/services/benchmark_service.go`, `internal/core/services/llm_service.go`, `internal/core/services/metric_service.go`
+
+#### Important Interfaces
+
+- **LLM Provider Interface**: Defines the interface for communication with LLM providers.
