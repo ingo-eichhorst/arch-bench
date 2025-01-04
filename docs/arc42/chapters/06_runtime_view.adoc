@@ -1,0 +1,7 @@
+# 06_runtime_view.adoc - Runtime View
+
+== Runtime View
+
+=== Note
+
+This chapter has been intentionally left blank as there are currently no specific runtime scenarios that need to be documented for the Architecture Benchmark Tool. Should relevant scenarios be identified in the future, they will be added here.

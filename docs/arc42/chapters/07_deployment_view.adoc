@@ -1,0 +1,7 @@
+# 07_deployment_view.adoc - Deployment View
+
+== Deployment View
+
+=== Note
+
+The Architecture Benchmark Tool is currently executed locally. In the future, it may be packaged and installed as an artifact for broader distribution and deployment.

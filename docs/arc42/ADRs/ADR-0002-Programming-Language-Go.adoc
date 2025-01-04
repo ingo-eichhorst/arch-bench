@@ -1,0 +1,18 @@
+# ADR-0002-Programming-Language-Go.adoc - Architecture Decision Record
+
+== ADR-0002: Programming Language Go
+
+=== Context
+The team aims to learn a new programming language while developing the Architecture Benchmark Tool.
+
+=== Decision
+Implement the system using the Go programming language.
+
+=== Status
+Accepted
+
+=== Consequences
+- Opportunity for the team to learn Go.
+- Strong concurrency support and excellent standard library.
+- Single binary deployment.
+- Python would have been the alternative choice.

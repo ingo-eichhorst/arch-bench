@@ -1,0 +1,92 @@
+# 02_architecture_constraints.adoc - Architecture Constraints
+
+== Architecture Constraints
+
+=== Technical Constraints
+
+[options="header",cols="1,2,2"]
+|===
+|Constraint |Background |Implications
+|Go Programming Language |Project requirement |
+* Must use Go's concurrency features
+* Must follow Go best practices
+* Team needs Go expertise
+|OpenAI API Integration |Initial LLM provider |
+* Must handle API rate limits
+* Must manage API costs
+* Must handle API versioning
+|CLI-based Interface |Project requirement |
+* No GUI components
+* Focus on command-line usability
+* Clear text-based output formats
+|Local File Storage |Initial requirement |
+* File-based persistence
+* No database required initially
+* Must handle concurrent file access
+|===
+
+=== Organizational Constraints
+
+[options="header",cols="1,2,2"]
+|===
+|Constraint |Background |Implications
+|Open Source Development |Project requirement |
+* Public repository
+* Clear contribution guidelines
+* Open source license
+|Documentation |Project requirement |
+* English documentation
+* arc42 architecture documentation
+* Clear API documentation
+|Testing Requirements |Quality assurance |
+* Unit tests required
+* Integration tests for API calls
+* Benchmark validation tests
+|===
+
+=== Conventions
+
+==== Development Conventions
+
+* Code Style
+** Follow Go standard formatting (gofmt)
+** Use Go modules for dependency management
+** Follow project-specific linting rules
+
+* Testing
+** Unit tests for all core functionality
+** Integration tests for external services
+** Benchmark tests for performance critical parts
+
+* Documentation
+** Use AsciiDoc for documentation
+** Document all public APIs
+** Keep architecture documentation up-to-date
+
+==== Git Conventions
+
+* Branch naming
+** feature/* for new features
+** fix/* for bug fixes
+** doc/* for documentation changes
+
+* Commit messages
+** Follow conventional commits specification
+** Reference issue numbers where applicable
+
+==== Architecture Conventions
+
+* Hexagonal Architecture
+** Clear separation of core domain and adapters
+** Dependency injection for external services
+** Interface-based design
+
+* Error Handling
+** Proper error wrapping
+** Meaningful error messages
+** Error recovery mechanisms
+
+* Configuration
+** Environment-based configuration
+** Configuration validation
+** Sensible defaults
