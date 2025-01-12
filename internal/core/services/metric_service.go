@@ -41,7 +41,7 @@ func NewGEval(llmService *LLMService, taskPrompt, evalCriteria string) *GEval {
 // GenerateChainOfThoughts generates the evaluation steps
 func (g *GEval) GenerateChainOfThoughts() error {
 	prompt := fmt.Sprintf("Given the task: %s\nAnd the evaluation criteria: %s\nGenerate a step-by-step chain of thoughts for evaluation:", g.TaskPrompt, g.EvalCriteria)
-	response, err := g.llmService.GenerateResponse(prompt, "")
+	response, err := g.llmService.GenerateResponse("", prompt, nil)
 	if err != nil {
 		return fmt.Errorf("failed to generate chain of thoughts: %v", err)
 	}
@@ -69,26 +69,23 @@ func (g *GEval) buildPrompt(context, target string) string {
 	)
 }
 
-const gevalSchema = `
-{
-  "type": "object",
-  "properties": {
-    "score": {
-      "type": "number",
-      "description": "Overall evaluation score (0-100)",
-      "minimum": 0,
-      "maximum": 100
-    }
-  },
-  "required": [
-    "score"
-  ]
-}
-`
-
 // Evaluate performs the evaluation using structured output.
 func (g *GEval) Evaluate(context string, target string) (*domain.EvaluationResult, error) {
-	structuredResponse, err := g.llmService.provider.GenerateStructuredResponse(g.buildPrompt(context, target), target, gevalSchema)
+	var gevalSchemaVar = domain.StructuredOutput{
+		Type: "object",
+		Properties: domain.StructuredOutputProperties{
+			Score: domain.StructuredOutputPropertiy{
+				Type:        "number",
+				Description: "Overall evaluation score (0-100)",
+				// Minimum:     0, // Not yet supported by OpenAI
+				// Maximum:     100,
+			},
+		},
+		Required:             []string{"score"},
+		AdditionalProperties: false,
+	}
+
+	structuredResponse, err := g.llmService.provider.GenerateStructuredResponse(g.buildPrompt(context, target), target, gevalSchemaVar)
 	if err != nil {
 		return nil, fmt.Errorf("error generating structured response: %v", err)
 	}
@@ -101,16 +98,16 @@ func (g *GEval) Evaluate(context string, target string) (*domain.EvaluationResul
 	return &domain.EvaluationResult{Score: scoreInterface.(float64)}, nil
 }
 
-func (s *MetricService) CalculateMetrics(response string, expected string) []domain.Metric {
+func (s *MetricService) CalculateMetrics(response string, expected string) ([]domain.Metric, error) {
 	geval := NewGEval(s.llmService, "Evaluate the quality of the generated text.", "Coherence (1-5): evaluate the logical flow and connection between sentences.")
 	err := geval.GenerateChainOfThoughts()
 	if err != nil {
-		fmt.Printf("Error generating chain of thoughts: %v\n", err)
+		return nil, fmt.Errorf("error generating chain of thoughts: %v", err)
 	}
 
 	result, err := geval.Evaluate(expected, response)
 	if err != nil {
-		fmt.Printf("Error evaluating response: %v\n", err)
+		return nil, fmt.Errorf("error evaluating response: %v", err)
 	}
 
 	metrics := []domain.Metric{
@@ -124,7 +121,7 @@ func (s *MetricService) CalculateMetrics(response string, expected string) []dom
 		},
 	}
 
-	return metrics
+	return metrics, nil
 }
 
 func calculateRelevance(expected, actual string) float64 {

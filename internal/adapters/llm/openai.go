@@ -8,7 +8,6 @@ import (
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
 	"github.com/ingo-eichhorst/arch-bench/internal/core/ports"
 	"github.com/sashabaranov/go-openai"
-	"github.com/xeipuuv/gojsonschema"
 )
 
 type PriceEntry struct {
@@ -100,11 +99,18 @@ func (p *OpenAIProvider) GetModels() []string {
 }
 
 // GenerateStructuredResponse generates a response with structured output based on a JSON schema.
-func (p *OpenAIProvider) GenerateStructuredResponse(systemPrompt, query string, schema string) (map[string]interface{}, error) {
-	// Prepare the prompt to include instructions for structured output.
-	prompt := fmt.Sprintf(`Respond in a structured JSON format adhering to the following schema:
-%s
-Query: %s`, schema, query)
+func (p *OpenAIProvider) GenerateStructuredResponse(systemPrompt, query string, schema domain.StructuredOutput) (map[string]interface{}, error) {
+
+	// convert schema jsonstring to openai.ChatCompletionResponseFormat
+	responseFormat := openai.ChatCompletionResponseFormat{
+		Type: "json_schema", // This is always "json_object" for JSON schema
+		JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
+			Name:        "GEvalEvaluationScore",
+			Description: "Reasons about the evaluation score or a LLM or LVM completion",
+			Schema:      schema,
+			Strict:      true,
+		},
+	}
 
 	resp, err := p.client.CreateChatCompletion(
 		context.Background(),
@@ -117,9 +123,10 @@ Query: %s`, schema, query)
 				},
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: prompt,
+					Content: query,
 				},
 			},
+			ResponseFormat: &responseFormat,
 		},
 	)
 	if err != nil {
@@ -131,18 +138,6 @@ Query: %s`, schema, query)
 	err = json.Unmarshal([]byte(resp.Choices[0].Message.Content), &data)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling JSON response: %v", err)
-	}
-
-	// Validate against the JSON Schema (requires schema definition)
-	schemaLoader := gojsonschema.NewStringLoader(schema)
-	dataLoader := gojsonschema.NewGoLoader(data)
-	result, err := gojsonschema.Validate(schemaLoader, dataLoader)
-	if err != nil {
-		return nil, fmt.Errorf("error validating JSON against schema: %v", err)
-	}
-
-	if !result.Valid() {
-		return nil, fmt.Errorf("JSON response is invalid according to schema: %v", result.Errors())
 	}
 
 	cost, err := p.costCalculator.CalculateCost(resp.Usage.PromptTokens, resp.Usage.CompletionTokens, p.model)

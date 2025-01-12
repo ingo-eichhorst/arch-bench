@@ -2,15 +2,21 @@ package services
 
 import (
 	"fmt"
-	"strings"
+	"path/filepath"
 	"time"
 
+	"github.com/ingo-eichhorst/arch-bench/internal/adapters/report"
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
+	"github.com/ingo-eichhorst/arch-bench/internal/core/ports"
 )
 
 type BenchmarkService struct {
 	cfg           *domain.BenchmarkConfig
 	metricService *MetricService
+}
+
+type Report struct {
+	creator ports.ReportCreator
 }
 
 func NewBenchmarkService(benchConfig *domain.BenchmarkConfig) *BenchmarkService {
@@ -30,6 +36,10 @@ func (s *BenchmarkService) RunBenchmark(testSuiteName string) error {
 	fmt.Printf("- Eval Model: %s\n", s.cfg.EvalModel)
 	fmt.Printf("----------------------\n")
 
+	var completedTestSuites []*domain.TestSuite
+	var completedBenchmark *domain.Benchmark
+	stdOutReport := report.NewStdoutReportCreator()
+
 	for _, testSuiteConfig := range s.cfg.TestSuiteConfigs {
 		if testSuiteName != "" && testSuiteConfig.Name != testSuiteName {
 			continue // Skip if testSuiteName is specified and doesn't match
@@ -38,14 +48,23 @@ func (s *BenchmarkService) RunBenchmark(testSuiteName string) error {
 		if err != nil {
 			return fmt.Errorf("error running test suite %s: %v", testSuiteConfig.Name, err)
 		}
-		s.outputTestSuiteResults(testSuite)
+		stdOutReport.GenerateTestSuiteReport(testSuite)
+		completedTestSuites = append(completedTestSuites, testSuite)
 	}
+
+	completedBenchmark = &domain.Benchmark{
+		Name:         s.cfg.Name,
+		EvalProvider: s.cfg.EvalProvider,
+		EvalModel:    s.cfg.EvalModel,
+		TestSuites:   completedTestSuites,
+	}
+	stdOutReport.GenerateBenchmarkReport(completedBenchmark, completedTestSuites)
+
 	return nil
 }
 
 func (s *BenchmarkService) RunTestSuite(cfg domain.TestSuiteConfig) (*domain.TestSuite, error) {
 	fmt.Printf("Running Test Suite: %s\n", cfg.Name)
-	// fmt.Printf("- Test Provider: %s\n", cfg)
 
 	testSuite := &domain.TestSuite{
 		Name:      cfg.Name,
@@ -78,16 +97,30 @@ func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, 
 	}
 
 	startTime := time.Now()
-	llmResponse, err := llmService.GenerateResponse(testCaseConfig.Input, testCaseConfig.Input)
+
+	// Convert relative image paths to absolute paths
+	absImages := make([]string, len(testCaseConfig.Images))
+	for i, imagePath := range testCaseConfig.Images {
+		absPath, err := filepath.Abs(filepath.Join(testCaseConfig.Path, imagePath))
+		if err != nil {
+			return domain.TestCase{}, fmt.Errorf("error converting image path to absolute path: %w", err)
+		}
+		absImages[i] = absPath
+	}
+
+	llmResponse, err := llmService.GenerateResponse(testCaseConfig.Input, testCaseConfig.Expected, absImages)
 	if err != nil {
 		return domain.TestCase{}, fmt.Errorf("error creating LLM response: %v", err)
 	}
 	duration := time.Since(startTime)
 
-	metrics := s.metricService.CalculateMetrics(
+	metrics, err := s.metricService.CalculateMetrics(
 		llmResponse.Response,
 		testCaseConfig.Expected,
 	)
+	if err != nil {
+		return domain.TestCase{}, fmt.Errorf("error calculating metrics: %v", err)
+	}
 
 	return domain.TestCase{
 		Name:     testCaseConfig.Name,
@@ -100,23 +133,4 @@ func (s *BenchmarkService) RunTestCase(testSuiteConfig *domain.TestSuiteConfig, 
 			Cost:     llmResponse.Cost,
 		},
 	}, nil
-}
-
-func (s *BenchmarkService) outputTestSuiteResults(testSuite *domain.TestSuite) {
-	results := testSuite.AggregateResults()
-
-	fmt.Printf("\nResults for Test Suite: %s\n", testSuite.Name)
-	fmt.Printf("%-20s %-20s %-15s %-10s %-10s\n", "TestSuite", "TestCase", "Duration", "Cost", "Rating")
-	fmt.Println(strings.Repeat("-", 80))
-
-	for _, result := range results {
-		fmt.Printf("%-20s %-20s %-15s $%-9.2f %-10.2f\n",
-			result.TestSuite,
-			result.TestCase,
-			result.Duration.Round(time.Millisecond),
-			result.Cost,
-			result.AverageRating,
-		)
-	}
-	fmt.Println()
 }

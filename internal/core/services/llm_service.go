@@ -1,7 +1,9 @@
 package services
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/ingo-eichhorst/arch-bench/internal/adapters/llm"
 	"github.com/ingo-eichhorst/arch-bench/internal/core/domain"
@@ -28,18 +30,37 @@ func NewLLMService(providerName string, ModelName string, cfg *domain.BenchmarkC
 	return &LLMService{provider: provider}, nil
 }
 
-func (s *LLMService) GenerateResponse(SystemPrompt string, query string) (domain.LLMResponse, error) {
-	// TODO: FAKE images for now
-	images := make([]string, 0)
-	llmResponse, err := s.provider.GenerateResponse(SystemPrompt, query, images)
-	if err != nil {
-		return domain.LLMResponse{}, err
+func (s *LLMService) GenerateResponse(systemPrompt string, query string, images []string) (domain.LLMResponse, error) {
+	// Generate image embeddings (using a separate vision model)
+	base64Images := make([]string, len(images))
+	for i, imagePath := range images {
+		base64Image, err := encodeImageToBase64(imagePath)
+		if err != nil {
+			return domain.LLMResponse{}, fmt.Errorf("error encoding image to base64: %w", err)
+		}
+		base64Images[i] = base64Image
 	}
 
+	llmResponse, err := s.provider.GenerateResponse(systemPrompt, query, base64Images)
+	if err != nil {
+		return domain.LLMResponse{}, fmt.Errorf("error calling LLM provider: %w", err)
+	}
 	return llmResponse, nil
 }
 
-// Add the new GetModelPriceMap method
+func encodeImageToBase64(imagePath string) (string, error) {
+	// Read the image file
+	imageData, err := ioutil.ReadFile(imagePath)
+	if err != nil {
+		return "", fmt.Errorf("error reading image file: %w", err)
+	}
+
+	// Encode the image to base64
+	encodedImage := base64.StdEncoding.EncodeToString(imageData)
+
+	return encodedImage, nil
+}
+
 func (s *LLMService) GetModels() []string {
 	return s.provider.GetModels()
 }

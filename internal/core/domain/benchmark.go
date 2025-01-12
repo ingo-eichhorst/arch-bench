@@ -1,8 +1,10 @@
 package domain
 
 type Benchmark struct {
-	Name       string
-	TestSuites []*TestSuite
+	Name         string
+	EvalProvider string
+	EvalModel    string
+	TestSuites   []*TestSuite
 }
 
 type MeasurementConfig struct {
